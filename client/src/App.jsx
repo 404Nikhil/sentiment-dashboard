@@ -23,8 +23,11 @@ const App = () => {
     const fetchProfileData = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/mockProfile.json');
-        const data = await response.json();
+        const response = await fetch('http://localhost:5000/api/influencer/ralphedwards');
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        } const data = await response.json();
         setProfile(data);
       } catch (err) {
         console.error("Failed to fetch profile data:", err);
@@ -180,7 +183,7 @@ const InterestsPanel = ({ interests }) => (
   <div className="bg-gray-900/50 ring-1 ring-white/10 p-6 rounded-2xl h-full">
     <h2 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Interests</h2>
     <div className="flex flex-wrap gap-4 items-center justify-center pt-4">
-      {interests.sort((a,b) => b.value - a.value).map(interest => (
+      {interests.sort((a, b) => b.value - a.value).map(interest => (
         <div key={interest.name} className="relative flex items-center justify-center bg-gray-800/80 ring-1 ring-white/10 rounded-full text-white font-bold transition-transform hover:scale-105" style={{ width: `${interest.value * 1.6}px`, height: `${interest.value * 1.6}px` }}>
           <div className="text-center">
             <p className="text-lg">{interest.value}%</p>
@@ -198,22 +201,22 @@ const PostAnalytics = ({ posts }) => {
 
   return (
     <div className="bg-gray-900/50 ring-1 ring-white/10 p-6 rounded-2xl h-full flex flex-col">
-       <h2 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Recent Post Engagement</h2>
-       <div className="flex-grow grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-2 gap-2">
+      <h2 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Recent Post Engagement</h2>
+      <div className="flex-grow grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-2 gap-2">
         {posts.map(post => (
           <img key={post.id} src={post.imageUrl} className="w-full h-full object-cover rounded-md" alt="Recent Post Thumbnail" />
         ))}
-       </div>
-       <div className="mt-4 space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span className="text-gray-400">Total Likes (Last 6)</span>
-            <span className="font-semibold text-white">{(totalLikes / 1000).toFixed(1)}K</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-400">Total Comments (Last 6)</span>
-            <span className="font-semibold text-white">{(totalComments / 1000).toFixed(1)}K</span>
-          </div>
-       </div>
+      </div>
+      <div className="mt-4 space-y-2 text-sm">
+        <div className="flex justify-between">
+          <span className="text-gray-400">Total Likes (Last 6)</span>
+          <span className="font-semibold text-white">{(totalLikes / 1000).toFixed(1)}K</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-gray-400">Total Comments (Last 6)</span>
+          <span className="font-semibold text-white">{(totalComments / 1000).toFixed(1)}K</span>
+        </div>
+      </div>
     </div>
   )
 }
