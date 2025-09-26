@@ -23,7 +23,7 @@ const App = () => {
     const fetchProfileData = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:5000/api/influencer/ralphedwards');
+        const response = await fetch('http://localhost:5000/api/influencer/nasa');
 
         if (!response.ok) {
           throw new Error('Network response was not ok');
