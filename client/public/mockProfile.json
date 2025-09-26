@@ -1,0 +1,50 @@
+{
+    "fullName": "Ralph Edwards",
+    "username": "ralphedwards",
+    "profilePictureUrl": "https://i.pravatar.cc/150?u=mrbeast",
+    "followers": 1250000,
+    "following": 530,
+    "postsCount": 320,
+    "location": "SPAIN",
+    "age": 23,
+    "status": "SINGLE",
+    "basicStats": [
+      { "label": "Sentiment Score", "value": "85%", "icon": "sentiment" },
+      { "label": "Extrovert Level", "value": "Mid", "icon": "extrovert" },
+      { "label": "Social Topics", "value": "8.2/10", "icon": "cognizant" },
+      { "label": "Religious or Hate Speech", "value": "Low Risk", "icon": "risk" },
+      { "label": "Fair Play Rating", "value": "8.0/10", "icon": "fair-play" }
+    ],
+    "personality": [
+      { "trait": "Adventure", "score": 78 },
+      { "trait": "Extrovert", "score": 46 },
+      { "trait": "Sportive", "score": 94 },
+      { "trait": "Attentive", "score": 55 }
+    ],
+    "interests": [
+      { "name": "Swimming", "value": 80 },
+      { "name": "Travel", "value": 64 },
+      { "name": "Adventure", "value": 64 },
+      { "name": "Movies", "value": 23 },
+      { "name": "Gaming", "value": 80 },
+      { "name": "Social", "value": 16 }
+    ],
+    "occupation": {
+      "jobTitle": "Software developer",
+      "company": "Microsoft",
+      "annualIncome": "$100K"
+    },
+    "engagementAnalytics": {
+      "avgLikes": 68200,
+      "avgComments": 1540,
+      "engagementRate": 5.58
+    },
+    "recentPosts": [
+      { "id": 1, "imageUrl": "https://placehold.co/400x400/1a1a1a/ffffff?text=Post+1", "likes": 72000, "comments": 1800 },
+      { "id": 2, "imageUrl": "https://placehold.co/400x400/2a2a2a/ffffff?text=Post+2", "likes": 65000, "comments": 1200 },
+      { "id": 3, "imageUrl": "https://placehold.co/400x400/3a3a3a/ffffff?text=Post+3", "likes": 81000, "comments": 2100 },
+      { "id": 4, "imageUrl": "https://placehold.co/400x400/4a4a4a/ffffff?text=Post+4", "likes": 59000, "comments": 950 },
+      { "id": 5, "imageUrl": "https://placehold.co/400x400/5a5a5a/ffffff?text=Post+5", "likes": 92000, "comments": 2500 },
+      { "id": 6, "imageUrl": "https://placehold.co/400x400/6a6a6a/ffffff?text=Post+6", "likes": 75000, "comments": 1600 }
+    ]
+  }
