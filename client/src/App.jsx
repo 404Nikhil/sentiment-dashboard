@@ -23,11 +23,17 @@ const App = () => {
     const fetchProfileData = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:5000/api/influencer/nasa');
+        
+        const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/api/influencer/nasa`;
+        
+        console.log(`Fetching data from: ${apiUrl}`); 
+
+        const response = await fetch(apiUrl);
 
         if (!response.ok) {
           throw new Error('Network response was not ok');
-        } const data = await response.json();
+        }
+        const data = await response.json();
         setProfile(data);
       } catch (err) {
         console.error("Failed to fetch profile data:", err);
