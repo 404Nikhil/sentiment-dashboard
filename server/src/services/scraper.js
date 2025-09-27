@@ -1,100 +1,104 @@
-const { chromium } = require('playwright');
 const fs = require('fs').promises;
 const path = require('path');
 
 async function scrapeInstagramProfile(username) {
-  let browser = null;
   try {
-    console.log('[Scraper]: Launching browser...');
-    // IMPORTANT: For debugging, change headless to false to watch the browser work
-    browser = await chromium.launch({ headless: true }); 
-    const context = await browser.newContext();
-
-    // ... (Cookie loading logic remains the same)
-    console.log('[Scraper]: Loading and performing definitive cleaning of session cookies...');
+    // load session cookies for authentication.
+    console.log('[API Scraper]: Loading session cookies for authentication...');
     const cookiesPath = path.join(__dirname, '../../cookies.json');
     const cookiesString = await fs.readFile(cookiesPath);
-    const originalCookies = JSON.parse(cookiesString);
-    const cleanedCookies = originalCookies.map(cookie => {
-      let sameSite = 'Lax';
-      if (cookie.sameSite === 'no_restriction') sameSite = 'None';
-      else if (cookie.sameSite?.toLowerCase() === 'lax') sameSite = 'Lax';
-      else if (cookie.sameSite?.toLowerCase() === 'strict') sameSite = 'Strict';
-      return { ...cookie, sameSite, expires: cookie.expirationDate ? Math.round(cookie.expirationDate) : -1 };
-    });
-    await context.addCookies(cleanedCookies);
-    console.log('[Scraper]: Cookies loaded successfully!');
+    const cookies = JSON.parse(cookiesString);
 
-    const page = await context.newPage();
-    const profileUrl = `https://www.instagram.com/${username}/`;
-    console.log(`[Scraper]: Navigating to ${profileUrl}...`);
-    await page.goto(profileUrl, { waitUntil: 'domcontentloaded', timeout: 15000 });
-    await page.waitForTimeout(3000);
+    // essential cookies needed for the request headers.
+    const sessionid = cookies.find(c => c.name === 'sessionid')?.value;
+    const csrftoken = cookies.find(c => c.name === 'csrftoken')?.value;
+    const ds_user_id = cookies.find(c => c.name === 'ds_user_id')?.value;
 
-    const basicInfo = await page.evaluate(() => { /* ... (This part is likely fine) ... */ return {}; });
-    
-    console.log('[Scraper]: Scraping post URLs...');
-    const postLinks = await page.evaluate(() => {
-        const links = new Set();
-        document.querySelectorAll('a[href*="/p/"], a[href*="/reel/"]').forEach(a => {
-            if (links.size < 10) links.add(a.href);
-        });
-        return Array.from(links);
-    });
-
-    if (postLinks.length === 0) {
-      throw new Error("No post links found.");
-    }
-    
-    const postsData = [];
-    console.log(`[Scraper]: Found ${postLinks.length} posts. Getting details...`);
-    for (const link of postLinks) {
-      try {
-        await page.goto(link, { waitUntil: 'domcontentloaded', timeout: 15000 });
-        
-        // --- START OF THE FIX ---
-        // Instead of waiting for a generic 'article', we wait for the main media element.
-        // This is a more specific and reliable target.
-        const mediaSelector = 'article video, article img._aap0, article ._aa6g img';
-        await page.waitForSelector(mediaSelector, { timeout: 15000 });
-        // --- END OF THE FIX ---
-
-        await page.waitForTimeout(1500 + Math.random() * 1000);
-
-        const postDetails = await page.evaluate(() => {
-            // Updated, more specific selectors
-            const likesElement = document.querySelector('section[class*="ltpnav"] span[class*="xdj266r"]');
-            const captionElement = document.querySelector('h1, ._aacl._aaco._aacu._aacx._aad7._aade');
-            const imageUrl = document.querySelector(mediaSelector)?.src;
-            return {
-                likes: likesElement ? likesElement.innerText : '0',
-                caption: captionElement ? captionElement.innerText : '',
-                imageUrl: imageUrl,
-            };
-        });
-        
-        postsData.push({
-            postUrl: link,
-            likes: parseInt(String(postDetails.likes).replace(/,/g, ''), 10) || 0,
-            caption: postDetails.caption,
-            imageUrl: postDetails.imageUrl,
-        });
-      } catch (postError) {
-        console.warn(`Could not scrape post at ${link}. Skipping. Error: ${postError.message}`);
-      }
+    if (!sessionid || !csrftoken || !ds_user_id) {
+      throw new Error('Essential cookies (sessionid, csrftoken, ds_user_id) not found in cookies.json. Please re-export them.');
     }
 
-    console.log('[Scraper]: Scraping complete!');
-    return { ...basicInfo, recentPosts: postsData };
+    // format cookies into a single string for the 'cookie' header.
+    const cookieString = cookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; ');
+
+    // full set of realistic browser headers.
+    const headers = {
+      "Accept": "*/*",
+      "Accept-Language": "en-US,en;q=0.9",
+      "Cookie": cookieString,
+      "Referer": `https://www.instagram.com/${username}/`,
+      "Sec-Fetch-Dest": "empty",
+      "Sec-Fetch-Mode": "cors",
+      "Sec-Fetch-Site": "same-origin",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+      "X-ASBD-ID": "129477",
+      "X-CSRFToken": csrftoken,
+      "X-IG-App-ID": "936619743392459",
+      "X-IG-WWW-Claim": "0",
+      "X-Requested-With": "XMLHttpRequest"
+    };
+
+    // main profile data using the authenticated headers.
+    console.log(`[API Scraper]: Fetching profile info for ${username}...`);
+    const profileUrl = `https://www.instagram.com/api/v1/users/web_profile_info/?username=${username}`;
+    const profileResponse = await fetch(profileUrl, { headers });
+    
+    if (!profileResponse.ok) {
+      const errorBody = await profileResponse.text();
+      throw new Error(`Failed to fetch profile. Status: ${profileResponse.status}. Body: ${errorBody}`);
+    }
+    
+    const profileJson = await profileResponse.json();
+    const userData = profileJson.data.user;
+
+    if (!userData) {
+      throw new Error(`User not found or private profile: ${username}`);
+    }
+    
+    const userId = userData.id;
+
+    const basicInfo = {
+      fullName: userData.full_name,
+      followers: userData.edge_followed_by.count,
+      following: userData.edge_follow.count,
+      postsCount: userData.edge_owner_to_timeline_media.count,
+      profilePictureUrl: userData.profile_pic_url_hd,
+    };
+
+    // the user's post feed using their ID.
+    console.log(`[API Scraper]: Fetching posts for user ID ${userId}...`);
+    const feedUrl = `https://www.instagram.com/api/v1/feed/user/${userId}/`;
+    const feedResponse = await fetch(feedUrl, { headers });
+    if (!feedResponse.ok) {
+        const errorBody = await feedResponse.text();
+        throw new Error(`Failed to fetch user feed. Status: ${feedResponse.status}. Body: ${errorBody}`);
+    }
+    const feedJson = await feedResponse.json();
+    const items = feedJson.items.slice(0, 10);
+
+    const recentPosts = items.map(item => {
+      const imageUrl = item.image_versions2?.candidates[0]?.url || item.carousel_media?.[0]?.image_versions2?.candidates[0]?.url;
+      return {
+        id: item.id,
+        imageUrl: imageUrl,
+        likes: item.like_count || 0,
+        comments: item.comment_count || 0,
+        caption: item.caption?.text || "",
+        postUrl: `https://www.instagram.com/p/${item.code}/`
+      };
+    });
+
+    const finalData = { ...basicInfo, recentPosts: recentPosts };
+
+    const outputPath = path.join(__dirname, '../../output.json');
+    await fs.writeFile(outputPath, JSON.stringify(finalData, null, 2));
+    console.log(`[API Scraper]: Successfully wrote scraped data to ${outputPath}`);
+
+    return finalData;
 
   } catch (error) {
-    console.error('[Scraper]: An error occurred during the scraping process:', error);
+    console.error('[API Scraper]: An error occurred:', error);
     return null;
-  } finally {
-    if (browser) {
-      await browser.close();
-      console.log('[Scraper]: Browser closed.');
-    }
   }
 }
 

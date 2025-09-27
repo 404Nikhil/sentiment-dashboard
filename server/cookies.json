@@ -40,7 +40,7 @@
     },
     {
         "domain": ".instagram.com",
-        "expirationDate": 1766687981.689909,
+        "expirationDate": 1766755696.371595,
         "hostOnly": false,
         "httpOnly": false,
         "name": "ds_user_id",
@@ -53,7 +53,7 @@
     },
     {
         "domain": ".instagram.com",
-        "expirationDate": 1774463981.6897,
+        "expirationDate": 1774531696.371405,
         "hostOnly": false,
         "httpOnly": false,
         "name": "csrftoken",
@@ -92,7 +92,7 @@
     },
     {
         "domain": ".instagram.com",
-        "expirationDate": 1759516766,
+        "expirationDate": 1759583392,
         "hostOnly": false,
         "httpOnly": false,
         "name": "wd",
@@ -101,7 +101,7 @@
         "secure": true,
         "session": false,
         "storeId": null,
-        "value": "1920x965"
+        "value": "301x689"
     },
     {
         "domain": ".instagram.com",
@@ -118,7 +118,7 @@
     },
     {
         "domain": ".instagram.com",
-        "expirationDate": 1774463966.990793,
+        "expirationDate": 1774529283.837182,
         "hostOnly": false,
         "httpOnly": true,
         "name": "sessionid",
@@ -127,7 +127,20 @@
         "secure": true,
         "session": false,
         "storeId": null,
-        "value": "55650561954%3AdOWT2DQajyUU6d%3A12%3AAYjQnjc1oJrWtAzJsj8qbTOK_nPAr-Oajx3k5txUWMM"
+        "value": "55650561954%3AdOWT2DQajyUU6d%3A12%3AAYgVNFGAlyU7YqVH6xDxF2Kw4H3wC-bTw4aVSzExL48"
+    },
+    {
+        "domain": ".instagram.com",
+        "expirationDate": 1759582404,
+        "hostOnly": false,
+        "httpOnly": false,
+        "name": "dpr",
+        "path": "/",
+        "sameSite": "no_restriction",
+        "secure": true,
+        "session": false,
+        "storeId": null,
+        "value": "1.399999976158142"
     },
     {
         "domain": ".instagram.com",
@@ -139,6 +152,6 @@
         "secure": true,
         "session": true,
         "storeId": null,
-        "value": "\"CLN\\05455650561954\\0541790457079:01feb980ccc8f1ca6f7a7b02a5eb397d27ff5334d3c02a5f6843fab5ba8a8633bb35449c\""
+        "value": "\"CLN\\05455650561954\\0541790515696:01fe960c77a475453ed560876857ea095e0faf406bd3900a995813cb5377ba06d53656d5\""
     }
 ]

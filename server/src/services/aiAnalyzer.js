@@ -30,14 +30,12 @@ class AiAnalyzer {
       const vibe_labels = ["casual", "aesthetic", "luxury", "energetic", "calm", "professional", "happy", "moody"];
       const quality_labels = ["high resolution", "good lighting", "professional photography", "blurry", "low quality", "screenshot"];
   
-      // Run all classifications in parallel for efficiency
       const [keyword_results, vibe_results, quality_results] = await Promise.all([
         classifier(imageUrl, keyword_labels),
         classifier(imageUrl, vibe_labels),
         classifier(imageUrl, quality_labels),
       ]);
   
-        // Process results to extract top labels
       const tags = keyword_results.filter(r => r.score > 0.9).slice(0, 2).map(r => r.label);
       const vibe = vibe_results[0]?.label || 'unknown'; // Get the single best vibe
       const quality = quality_results[0]?.label || 'standard'; // Get the single best quality indicator
