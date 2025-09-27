@@ -16,7 +16,7 @@ app.get('/', (req, res) => {
 });
 
 // Routes
-app.use('/api/influencer', require('./api/influencerRoutes')); // This line is already correct
+app.use('/api/influencer', require('./api/influencerRoutes')); 
 
 const PORT = process.env.PORT || 5000;
 

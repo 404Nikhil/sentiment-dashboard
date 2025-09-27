@@ -1,8 +1,9 @@
-// API logic 
 const express = require('express');
 const router = express.Router();
 const Influencer = require('../models/Influencer');
 const { scrapeInstagramProfile } = require('../services/scraper');
+// 1. Import the AI Analyzer at the top of the file
+const { analyzeImage } = require('../services/aiAnalyzer');
 
 /**
  * Calculates engagement analytics based on post data and follower count.
@@ -10,8 +11,6 @@ const { scrapeInstagramProfile } = require('../services/scraper');
  * @param {number} followers - The total follower count.
  * @returns {object} An object with avgLikes, avgComments, and engagementRate.
  */
-
-
 const calculateAnalytics = (posts, followers) => {
   if (!posts || posts.length === 0) {
     return { avgLikes: 0, avgComments: 0, engagementRate: 0 };
@@ -33,7 +32,6 @@ const calculateAnalytics = (posts, followers) => {
     engagementRate: parseFloat(engagementRate.toFixed(2)),
   };
 };
-
 
 // @route   GET /api/influencer/:username
 // @desc    Get influencer profile data from DB or scrape if needed
@@ -58,32 +56,57 @@ router.get('/:username', async (req, res) => {
     console.log(`No fresh data for ${username}. Starting scraper...`);
     const scrapedData = await scrapeInstagramProfile(username);
 
-    if (!scrapedData) {
+    // If scraping fails, try to serve stale data as a fallback.
+    if (!scrapedData || !scrapedData.recentPosts || scrapedData.recentPosts.length === 0) {
       const oldInfluencerData = await Influencer.findOne({ username });
-      if(oldInfluencerData) {
-        console.warn(`Scraping failed. Serving stale data for ${username}.`);
+      if (oldInfluencerData) {
+        console.warn(`Scraping failed or no posts found. Serving stale data for ${username}.`);
         return res.json(oldInfluencerData);
       }
       return res.status(500).json({ msg: 'Scraping failed and no cached data available.' });
     }
-    
+
+    // SAI ANALYSIS
+    console.log('Starting AI analysis for scraped posts...');
+    const enrichedPosts = await Promise.all(
+      scrapedData.recentPosts.map(async (post) => {
+        const aiData = await analyzeImage(post.imageUrl);
+        return { ...post, ...aiData };
+      })
+    );
+
     // CALCULATE
+    // Perform analytics on the newly scraped and enriched data.
     const followersCount = parseInt(String(scrapedData.followers).replace(/,/g, ''), 10) || 0;
-    const analytics = calculateAnalytics(scrapedData.recentPosts, followersCount);
+    const analytics = calculateAnalytics(enrichedPosts, followersCount);
 
     // PREPARE DATA
+    // Assemble the final, complete profile object.
     const profileData = {
       username: username,
-      fullName: scrapedData.fullName,
+      fullName: scrapedData.fullName || 'N/A',
       profilePictureUrl: scrapedData.profilePictureUrl,
       followers: followersCount,
       following: parseInt(String(scrapedData.following).replace(/,/g, ''), 10) || 0,
       postsCount: parseInt(String(scrapedData.postsCount).replace(/,/g, ''), 10) || 0,
-      recentPosts: scrapedData.recentPosts,
+      recentPosts: enrichedPosts, // <-- Use the AI-enriched posts here
       engagementAnalytics: analytics,
       lastUpdated: new Date(),
+      location: "SPAIN",
+      age: 23,
+      status: "SINGLE",
+      basicStats: [
+        { "label": "Sentiment Score", "value": "85%", "icon": "sentiment" },
+        { "label": "Extrovert Level", "value": "Mid", "icon": "extrovert" },
+        { "label": "Social Topics", "value": "8.2/10", "icon": "cognizant" },
+        { "label": "Religious or Hate Speech", "value": "Low Risk", "icon": "risk" },
+        { "label": "Fair Play Rating", "value": "8.0/10", "icon": "fair-play" }
+      ],
+      personality: [ { "trait": "Adventure", "score": 78 }, { "trait": "Extrovert", "score": 46 }, { "trait": "Sportive", "score": 94 }, { "trait": "Attentive", "score": 55 } ],
+      interests: [ { "name": "Swimming", "value": 80 }, { "name": "Travel", "value": 64 }, { "name": "Adventure", "value": 64 }, { "name": "Movies", "value": 23 }, { "name": "Gaming", "value": 80 }, { "name": "Social", "value": 16 } ],
+      occupation: { "jobTitle": "Software developer", "company": "Microsoft", "annualIncome": "$100K" }
     };
-
+    
     // UPDATE DATABASE
     influencer = await Influencer.findOneAndUpdate(
       { username: username },
@@ -91,7 +114,7 @@ router.get('/:username', async (req, res) => {
       { new: true, upsert: true }
     );
     
-    console.log(`Successfully scraped and updated data for ${username}`);
+    console.log(`Successfully scraped, analyzed, and updated data for ${username}`);
     res.json(influencer);
 
   } catch (error) {
