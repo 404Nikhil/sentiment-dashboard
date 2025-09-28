@@ -30,16 +30,23 @@ const calculateAnalytics = (posts, followers) => {
 
 router.get('/:username', async (req, res) => {
   const { username } = req.params;
+  const { force } = req.query;
+
   try {
-    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    let influencer = await Influencer.findOne({
-      username: username,
-      lastUpdated: { $gte: twentyFourHoursAgo },
-    });
-    if (influencer) {
-      console.log(`Serving fresh data from cache for ${username}`);
-      return res.json(influencer);
+    if (force !== 'true') {
+      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      let influencer = await Influencer.findOne({
+        username: username,
+        lastUpdated: { $gte: twentyFourHoursAgo },
+      });
+      if (influencer) {
+        console.log(`Serving fresh data from cache for ${username}`);
+        return res.json(influencer);
+      }
+    } else {
+      console.log(`Force refreshing data for ${username}. Bypassing cache.`);
     }
+
 
     const scrapedData = await scrapeInstagramProfile(username);
     if (!scrapedData || !scrapedData.recentPosts || !scrapedData.recentPosts.length) {
@@ -58,7 +65,7 @@ router.get('/:username', async (req, res) => {
             const aiData = await analyzeImage(post.imageUrl);
             return { ...post, ...aiData };
         }
-        return post;
+        return post; 
       })
     );
 
@@ -66,7 +73,7 @@ router.get('/:username', async (req, res) => {
     const analytics = calculateAnalytics(enrichedPosts, followersCount);
 
     const profileData = {
-        username: username,
+        username: scrapedData.username,
         fullName: scrapedData.fullName || 'N/A',
         profilePictureUrl: scrapedData.profilePictureUrl,
         followers: followersCount,

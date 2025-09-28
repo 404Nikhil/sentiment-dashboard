@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Smile, Users, Brain, ShieldCheck, Award, Home, Clock, Tv, AtSign, MessageCircle, BarChart2 as BarChartIcon, UserCircle, Settings, Tag, Zap, Star, TrendingUp, PieChart as PieChartIcon, Sun, Eye, Repeat } from 'lucide-react';
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Smile, Users, Brain, ShieldCheck, Award, Home, Clock, Tv, AtSign, MessageCircle, BarChart2 as BarChartIcon, UserCircle, Settings, Tag, Zap, Star, TrendingUp, Sun, Eye, Repeat, RefreshCw } from 'lucide-react';
+import { LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const iconMap = {
   sentiment: Smile, extrovert: Users, cognizant: Brain, risk: ShieldCheck, 'fair-play': Award,
@@ -8,13 +8,13 @@ const iconMap = {
 };
 
 const App = () => {
-  const [username, setUsername] = useState('youtube'); 
-  const [inputValue, setInputValue] = useState('youtube');
+  const [username, setUsername] = useState('isro'); // Default username
+  const [inputValue, setInputValue] = useState('isro');
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchProfileData = async (user) => {
+  const fetchProfileData = useCallback(async (user, force = false) => {
     if (!user) {
       setError("Please enter a username.");
       setProfile(null);
@@ -25,13 +25,17 @@ const App = () => {
       setLoading(true);
       setError(null);
       
-      const apiUrl = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/influencer/${user}`;
+      let apiUrl = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/influencer/${user}`;
+      if (force) {
+        apiUrl += '?force=true';
+      }
+      
       console.log(`Fetching data from: ${apiUrl}`); 
 
       const response = await fetch(apiUrl);
 
       if (!response.ok) {
-        const errData = await response.json();
+        const errData = await response.json().catch(() => ({ msg: `API request failed with status: ${response.status}` }));
         throw new Error(errData.msg || `API request failed with status: ${response.status}`);
       }
       const data = await response.json();
@@ -44,21 +48,25 @@ const App = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchProfileData(username);
-  }, [username]);
+    fetchProfileData(username, false);
+  }, [username, fetchProfileData]);
 
-  const handleFetchClick = (e) => {
+  const handleSubmit = (e, force = false) => {
     e.preventDefault();
-    setUsername(inputValue);
+    if (force) {
+      fetchProfileData(inputValue, true);
+    } else {
+      setUsername(inputValue);
+    }
   };
 
   return (
     <div className="bg-black text-gray-300 min-h-screen font-sans p-4 lg:p-6">
       <div className="max-w-[1400px] mx-auto mb-6">
-        <form onSubmit={handleFetchClick} className="flex items-center space-x-2">
+        <form onSubmit={(e) => handleSubmit(e, false)} className="flex items-center space-x-2">
           <input
             type="text"
             value={inputValue}
@@ -68,10 +76,19 @@ const App = () => {
           />
           <button
             type="submit"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition disabled:opacity-50"
             disabled={loading}
           >
-            {loading ? 'Fetching...' : 'Fetch Profile'}
+            {loading && username === inputValue ? 'Fetching...' : 'Fetch Profile'}
+          </button>
+          <button
+            type="button"
+            onClick={(e) => handleSubmit(e, true)}
+            className="bg-gray-600 hover:bg-gray-700 text-white font-bold p-2 rounded-lg transition disabled:opacity-50"
+            title="Force Refresh (bypass cache)"
+            disabled={loading}
+          >
+             <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
           </button>
         </form>
       </div>
@@ -110,12 +127,14 @@ const App = () => {
   );
 };
 
+// --- HELPER FUNCTIONS ---
 const formatNumber = (num) => {
   if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
   if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
   return num;
 };
 
+// --- UI COMPONENTS ---
 const Sidebar = () => ( <aside className="col-span-12 lg:col-span-1 bg-gray-900/50 ring-1 ring-white/10 rounded-2xl p-2 flex lg:flex-col items-center justify-around lg:justify-start lg:space-y-6"> <div className="p-2 bg-blue-500 rounded-lg text-white font-bold">In</div> <NavIcon iconName="home" /> <NavIcon iconName="clock" /> <NavIcon iconName="tv" /> <NavIcon iconName="atSign" /> <NavIcon iconName="messageCircle" /> <NavIcon iconName="barChart" /> <div className="hidden lg:block flex-grow"></div> <UserCircle className="w-6 h-6 text-gray-400" /> <Settings className="w-6 h-6 text-gray-400" /> </aside> );
 const NavIcon = ({ iconName }) => { const Icon = iconMap[iconName]; return <Icon className="w-6 h-6 text-gray-400 hover:text-white transition-colors cursor-pointer" />; };
 
@@ -155,7 +174,7 @@ const EngagementPanel = ({ analytics }) => {
                 <div className="flex justify-between items-center"><span className="text-gray-400">Avg Likes / Post</span><span className="font-bold text-white text-lg">{formatNumber(analytics.avgLikes)}</span></div>
                 <div className="flex justify-between items-center"><span className="text-gray-400">Avg Comments / Post</span><span className="font-bold text-white text-lg">{formatNumber(analytics.avgComments)}</span></div>
                 <div className="flex justify-between items-center"><span className="text-gray-400">Engagement Rate</span><span className={`font-bold text-lg ${getEngagementColor(analytics.engagementLevel)}`}>{analytics.engagementRate.toFixed(2)}%</span></div>
-                <div className="flex justify-between items-center"><span className="text-gray-400">Engagement Level</span><span className={`font-bold text-lg ${getEngagementColor(analytics.engagementLevel)}`}>{analytics.engagementLevel}</span></div>
+                 <div className="flex justify-between items-center"><span className="text-gray-400">Engagement Level</span><span className={`font-bold text-lg ${getEngagementColor(analytics.engagementLevel)}`}>{analytics.engagementLevel}</span></div>
             </div>
             <p className="text-xs text-gray-500 mt-4">Based on the last 10 posts.</p>
         </div>
