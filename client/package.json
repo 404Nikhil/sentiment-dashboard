@@ -2,7 +2,8 @@
   "dependencies": {
     "lucide-react": "^0.544.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "recharts": "^3.2.1"
   },
   "devDependencies": {
     "@types/react": "^19.0.2",

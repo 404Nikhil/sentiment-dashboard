@@ -29,8 +29,26 @@ async function analyzeImage(imageUrl) {
     console.log(`[Gemini Analyzer]: Analyzing image ${imageUrl.slice(0, 50)}...`);
     const imagePart = await urlToGenerativePart(imageUrl, mimeType);
 
-    const prompt = `Analyze this Instagram post image. Describe it as a JSON object with three keys: "tags" (an array of 2-3 relevant keywords like 'food', 'travel'), "vibe" (a single descriptive word for the ambiance like 'casual', 'energetic'), and "quality" (a single word for the visual quality like 'professional', 'blurry').`;
 
+    const prompt = `
+      Analyze the provided Instagram image and respond ONLY with a single JSON object. Do not include any text or markdown formatting before or after the JSON.
+      The JSON object must have the following structure:
+      {
+        "tags": ["tag1", "tag2"],
+        "vibe": "...",
+        "quality": {
+          "lighting": "...",
+          "visualAppeal": "...",
+          "consistency": "..."
+        }
+      }
+      - "tags": An array of 2-3 relevant string keywords from this list: ['food', 'travel', 'fashion', 'selfie', 'car', 'pet', 'fitness', 'nature', 'city', 'art', 'tech', 'lifestyle', 'product'].
+      - "vibe": A single descriptive string from this list: ['casual', 'aesthetic', 'luxury/lavish', 'energetic', 'calm', 'professional', 'happy', 'moody', 'minimalist'].
+      - "quality": An object with three keys. For each key, provide a single, concise descriptive string (e.g., "Bright", "Poor", "High", "Inconsistent").
+          - "lighting": Describes the quality of light (e.g., "Good", "Harsh", "Dim", "Natural").
+          - "visualAppeal": Describes the overall aesthetic attractiveness (e.g., "High", "Average", "Low", "Striking").
+          - "consistency": Describes how well it fits a consistent theme if one is apparent (e.g., "Consistent", "Off-brand", "Varied").
+    `;
     const payload = {
       contents: [{
         parts: [

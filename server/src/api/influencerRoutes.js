@@ -5,17 +5,26 @@ const { scrapeInstagramProfile } = require('../services/scraper');
 const { analyzeImage } = require('../services/aiAnalyzer');
 
 const calculateAnalytics = (posts, followers) => {
-  if (!posts || posts.length === 0) return { avgLikes: 0, avgComments: 0, engagementRate: 0 };
+  if (!posts || posts.length === 0) return { avgLikes: 0, avgComments: 0, engagementRate: 0, engagementLevel: 'N/A' };
   const totalLikes = posts.reduce((sum, post) => sum + (post.likes || 0), 0);
   const totalComments = posts.reduce((sum, post) => sum + (post.comments || 0), 0);
   const avgLikes = totalLikes / posts.length;
   const avgComments = totalComments / posts.length;
   let engagementRate = 0;
   if (followers > 0) engagementRate = ((avgLikes + avgComments) / followers) * 100;
+
+  let engagementLevel = 'Low';
+  if (engagementRate > 5) {
+    engagementLevel = 'High';
+  } else if (engagementRate > 2) {
+    engagementLevel = 'Medium';
+  }
+
   return {
     avgLikes: Math.round(avgLikes),
     avgComments: Math.round(avgComments),
     engagementRate: parseFloat(engagementRate.toFixed(2)),
+    engagementLevel: engagementLevel
   };
 };
 
@@ -49,7 +58,7 @@ router.get('/:username', async (req, res) => {
             const aiData = await analyzeImage(post.imageUrl);
             return { ...post, ...aiData };
         }
-        return post; 
+        return post;
       })
     );
 

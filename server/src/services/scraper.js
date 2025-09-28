@@ -58,6 +58,7 @@ async function scrapeInstagramProfile(username) {
     const userId = userData.id;
 
     const basicInfo = {
+      username: userData.username,
       fullName: userData.full_name,
       followers: userData.edge_followed_by.count,
       following: userData.edge_follow.count,
