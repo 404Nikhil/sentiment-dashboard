@@ -3,8 +3,12 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./db'); 
 const axios = require('axios');
+const { loadModel } = require('./services/aiAnalyzer'); 
 
 dotenv.config();
+
+loadModel();
+
 connectDB();
 
 const app = express();
