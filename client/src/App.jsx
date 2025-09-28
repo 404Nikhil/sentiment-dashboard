@@ -7,51 +7,75 @@ const iconMap = {
 };
 
 const App = () => {
+  const [username, setUsername] = useState('youtube');
+  const [inputValue, setInputValue] = useState('youtube');
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchProfileData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        const apiUrl = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/influencer/youtube`;
-        
-        console.log(`Fetching data from: ${apiUrl}`); 
+  const fetchProfileData = async (user) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const apiUrl = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/influencer/${user}`;
+      
+      console.log(`Fetching data from: ${apiUrl}`); 
 
-        const response = await fetch(apiUrl);
+      const response = await fetch(apiUrl);
 
-        if (!response.ok) {
-          throw new Error(`API request failed with status: ${response.status}`);
-        }
-        const data = await response.json();
-        setProfile(data);
-
-      } catch (err) {
-        console.warn("API fetch failed, falling back to mock data.", err);
-        try {
-          const fallbackResponse = await fetch('/mockProfile.json');
-          const fallbackData = await fallbackResponse.json();
-          setProfile(fallbackData);
-          setError("Live data could not be loaded. Displaying static mock data.");
-        } catch (fallbackErr) {
-          console.error("Failed to load mock data as well:", fallbackErr);
-          setError("A critical error occurred. Could not load any profile data.");
-        }
-      } finally {
-        setLoading(false);
+      if (!response.ok) {
+        throw new Error(`API request failed with status: ${response.status}`);
       }
-    };
-    fetchProfileData();
-  }, []);
+      const data = await response.json();
+      setProfile(data);
+
+    } catch (err) {
+      console.warn("API fetch failed, falling back to mock data.", err);
+      try {
+        const fallbackResponse = await fetch('/mockProfile.json');
+        const fallbackData = await fallbackResponse.json();
+        setProfile(fallbackData);
+        setError("Live data could not be loaded. Displaying static mock data.");
+      } catch (fallbackErr) {
+        console.error("Failed to load mock data as well:", fallbackErr);
+        setError("A critical error occurred. Could not load any profile data.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfileData(username);
+  }, [username]);
+
+  const handleFetchClick = () => {
+    setUsername(inputValue);
+  };
 
   if (loading) return <div className="bg-black text-white min-h-screen flex items-center justify-center font-sans"><p>Loading Profile...</p></div>;
   if (!profile) return <div className="bg-black text-white min-h-screen flex items-center justify-center font-sans"><p>{error || "Profile data is unavailable."}</p></div>;
 
   return (
     <div className="bg-black text-gray-300 min-h-screen font-sans p-4 lg:p-6">
+       <div className="max-w-[1400px] mx-auto mb-4">
+        <div className="flex items-center space-x-2">
+          <input
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            placeholder="Enter Instagram Username"
+            className="bg-gray-800 text-white px-4 py-2 rounded-lg w-full md:w-1/3"
+          />
+          <button
+            onClick={handleFetchClick}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
+          >
+            Fetch Profile
+          </button>
+        </div>
+      </div>
        {error && <div className="max-w-[1400px] mx-auto mb-4 text-center bg-yellow-900/50 text-yellow-300 text-sm py-2 px-4 rounded-lg">{error}</div>}
       <div className="max-w-[1400px] mx-auto grid grid-cols-12 gap-6">
         <Sidebar />
@@ -73,12 +97,14 @@ const App = () => {
   );
 };
 
+// --- HELPER FUNCTIONS ---
 const formatNumber = (num) => {
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
     if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
     return num;
 };
 
+// --- UI COMPONENTS ---
 const Sidebar = () => ( <aside className="col-span-12 lg:col-span-1 bg-gray-900/50 ring-1 ring-white/10 rounded-2xl p-2 flex lg:flex-col items-center justify-around lg:justify-start lg:space-y-6"> <div className="p-2 bg-blue-500 rounded-lg text-white">B</div> <NavIcon iconName="home" /> <NavIcon iconName="clock" /> <NavIcon iconName="tv" /> <NavIcon iconName="atSign" /> <NavIcon iconName="messageCircle" /> <NavIcon iconName="barChart" /> <div className="hidden lg:block flex-grow"></div> <UserCircle className="w-6 h-6 text-gray-400" /> <Settings className="w-6 h-6 text-gray-400" /> </aside> );
 const NavIcon = ({ iconName }) => { const Icon = iconMap[iconName]; return <Icon className="w-6 h-6 text-gray-400 hover:text-white transition-colors cursor-pointer" />; };
 
