@@ -73,14 +73,12 @@ const App = () => {
   );
 };
 
-// --- HELPER FUNCTIONS ---
 const formatNumber = (num) => {
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
     if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
     return num;
 };
 
-// --- UI COMPONENTS ---
 const Sidebar = () => ( <aside className="col-span-12 lg:col-span-1 bg-gray-900/50 ring-1 ring-white/10 rounded-2xl p-2 flex lg:flex-col items-center justify-around lg:justify-start lg:space-y-6"> <div className="p-2 bg-blue-500 rounded-lg text-white">B</div> <NavIcon iconName="home" /> <NavIcon iconName="clock" /> <NavIcon iconName="tv" /> <NavIcon iconName="atSign" /> <NavIcon iconName="messageCircle" /> <NavIcon iconName="barChart" /> <div className="hidden lg:block flex-grow"></div> <UserCircle className="w-6 h-6 text-gray-400" /> <Settings className="w-6 h-6 text-gray-400" /> </aside> );
 const NavIcon = ({ iconName }) => { const Icon = iconMap[iconName]; return <Icon className="w-6 h-6 text-gray-400 hover:text-white transition-colors cursor-pointer" />; };
 
@@ -145,7 +143,6 @@ const PostGrid = ({ posts }) => {
                                 <span>💬 {formatNumber(post.comments)}</span>
                            </div>
                            <p className="text-xs text-gray-400 line-clamp-3 mb-3 flex-grow">{post.caption || "No caption available."}</p>
-                           {/* AI Analysis Section */}
                            {post.tags && (
                              <div className="text-xs space-y-2 border-t border-gray-700 pt-2 mt-auto">
                                 <div className="flex items-center gap-2 text-yellow-400"><Tag size={14} /> Tags: {post.tags.join(', ') || 'N/A'}</div>
