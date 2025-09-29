@@ -1,66 +1,22 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Smile, Users, Brain, ShieldCheck, Award, Home, Clock, Tv, AtSign, MessageCircle, BarChart2 as BarChartIcon, UserCircle, Settings, RefreshCw } from 'lucide-react';
-import { LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
-
-import PostGrid from './components/PostGrid';
-import ReelsGrid from './components/ReelsGrid';
-
-const iconMap = {
-  sentiment: Smile, extrovert: Users, cognizant: Brain, risk: ShieldCheck, 'fair-play': Award,
-  home: Home, clock: Clock, tv: Tv, atSign: AtSign, messageCircle: MessageCircle, barChart: BarChartIcon,
-};
+import React, { useState, useEffect } from 'react';
+import { RefreshCw } from 'lucide-react';
+import { useInfluencerData } from './hooks/useInfluencerData';
+import Sidebar from './components/Sidebar';
+import Dashboard from './components/Dashboard';
 
 const App = () => {
-  const [username, setUsername] = useState('nasa');
+  const [username, setUsername] = useState('nasa'); // default username
   const [inputValue, setInputValue] = useState('nasa');
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  const fetchProfileData = useCallback(async (user, force = false) => {
-    if (!user) {
-      setError("Please enter a username.");
-      setProfile(null);
-      setLoading(false);
-      return;
-    }
-    try {
-      setLoading(true);
-      setError(null);
-      
-      let apiUrl = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/influencer/${user}`;
-      if (force) {
-        apiUrl += '?force=true';
-      }
-      
-      console.log(`Fetching data from: ${apiUrl}`); 
-
-      const response = await fetch(apiUrl);
-
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({ msg: `API request failed with status: ${response.status}` }));
-        throw new Error(errData.msg || `API request failed with status: ${response.status}`);
-      }
-      const data = await response.json();
-      setProfile(data);
-
-    } catch (err) {
-      console.error("API fetch error:", err);
-      setError(err.message || "Failed to fetch profile data. The account may not exist or the scraper might be blocked.");
-      setProfile(null);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const { profile, loading, error, fetchProfile } = useInfluencerData();
 
   useEffect(() => {
-    fetchProfileData(username, false);
-  }, [username, fetchProfileData]);
+    fetchProfile(username, false);
+  }, [username, fetchProfile]);
 
   const handleSubmit = (e, force = false) => {
     e.preventDefault();
     if (force) {
-      fetchProfileData(inputValue, true);
+      fetchProfile(inputValue, true);
     } else {
       setUsername(inputValue);
     }
@@ -101,225 +57,9 @@ const App = () => {
       <div className="max-w-[1400px] mx-auto grid grid-cols-12 gap-6">
         <Sidebar />
         <main className="col-span-12 lg:col-span-11">
-          {loading ? (
-            <div className="text-center py-20">Loading Profile...</div>
-          ) : profile ? (
-            <div className="grid grid-cols-12 gap-6">
-              <div className="col-span-12 xl:col-span-8">
-                <ProfileHeader profile={profile} />
-              </div>
-              <div className="col-span-12 xl:col-span-4">
-                <EngagementPanel analytics={profile.engagementAnalytics} />
-              </div>
-               <div className="col-span-12">
-                <AudienceDemographics demographics={profile.audienceDemographics} />
-              </div>
-              <div className="col-span-12 lg:col-span-7">
-                <EngagementTrendChart data={profile.recentPosts} />
-              </div>
-              <div className="col-span-12 lg:col-span-5">
-                <PostCategoryChart data={profile.recentPosts} />
-              </div>
-              <div className="col-span-12">
-                <PostGrid posts={profile.recentPosts} />
-              </div>
-              <div className="col-span-12">
-                <ReelsGrid reels={profile.recentReels} />
-              </div>
-            </div>
-          ) : (
-             <div className="text-center py-20 text-gray-500">Enter a username to get started.</div>
-          )}
+          <Dashboard profile={profile} loading={loading} error={null} />
         </main>
       </div>
-    </div>
-  );
-};
-
-// --- HELPER FUNCTIONS ---
-const formatNumber = (num) => {
-  if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-  if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-  return num;
-};
-
-// --- UI COMPONENTS ---
-const Sidebar = () => ( <aside className="col-span-12 lg:col-span-1 bg-gray-900/50 ring-1 ring-white/10 rounded-2xl p-2 flex lg:flex-col items-center justify-around lg:justify-start lg:space-y-6"> <div className="p-2 bg-blue-500 rounded-lg text-white font-bold">In</div> <NavIcon iconName="home" /> <NavIcon iconName="clock" /> <NavIcon iconName="tv" /> <NavIcon iconName="atSign" /> <NavIcon iconName="messageCircle" /> <NavIcon iconName="barChart" /> <div className="hidden lg:block flex-grow"></div> <UserCircle className="w-6 h-6 text-gray-400" /> <Settings className="w-6 h-6 text-gray-400" /> </aside> );
-const NavIcon = ({ iconName }) => { const Icon = iconMap[iconName]; return <Icon className="w-6 h-6 text-gray-400 hover:text-white transition-colors cursor-pointer" />; };
-
-const ProfileHeader = ({ profile }) => (
-  <div className="bg-gray-900/50 ring-1 ring-white/10 p-6 rounded-2xl">
-    <div className="flex flex-col md:flex-row items-start gap-6">
-      <img src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/image-proxy?url=${encodeURIComponent(profile.profilePictureUrl)}`} alt={profile.fullName} className="w-32 h-32 rounded-full border-4 border-gray-700" />
-      <div className="flex-1">
-        <div className="flex flex-col sm:flex-row justify-between items-start">
-          <div>
-            <h1 className="text-4xl lg:text-5xl font-bold text-white">{profile.fullName}</h1>
-            <h2 className="text-xl lg:text-2xl font-mono text-gray-400">@{profile.username}</h2>
-          </div>
-          <div className="flex items-center space-x-4 mt-2 sm:mt-0 text-sm text-gray-400">
-            <span>{formatNumber(profile.postsCount)} Posts</span>
-            <span>{formatNumber(profile.followers)} Followers</span>
-            <span>{formatNumber(profile.following)} Following</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-const EngagementPanel = ({ analytics }) => {
-    if (!analytics) return null;
-    const getEngagementColor = (level) => {
-      if (level === 'High') return 'text-green-400';
-      if (level === 'Medium') return 'text-yellow-400';
-      if (level === 'Low') return 'text-red-400';
-      return 'text-gray-400';
-    };
-    return (
-        <div className="bg-gray-900/50 ring-1 ring-white/10 p-6 rounded-2xl h-full flex flex-col">
-            <h2 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Engagement Analytics</h2>
-            <div className="space-y-4 text-sm flex-grow">
-                <div className="flex justify-between items-center"><span className="text-gray-400">Avg Likes / Post</span><span className="font-bold text-white text-lg">{formatNumber(analytics.avgLikes)}</span></div>
-                <div className="flex justify-between items-center"><span className="text-gray-400">Avg Comments / Post</span><span className="font-bold text-white text-lg">{formatNumber(analytics.avgComments)}</span></div>
-                <div className="flex justify-between items-center"><span className="text-gray-400">Engagement Rate</span><span className={`font-bold text-lg ${getEngagementColor(analytics.engagementLevel)}`}>{analytics.engagementRate.toFixed(2)}%</span></div>
-                 <div className="flex justify-between items-center"><span className="text-gray-400">Engagement Level</span><span className={`font-bold text-lg ${getEngagementColor(analytics.engagementLevel)}`}>{analytics.engagementLevel}</span></div>
-            </div>
-            <p className="text-xs text-gray-500 mt-4">Based on the last 10 posts.</p>
-        </div>
-    );
-};
-
-const AudienceDemographics = ({ demographics }) => {
-  if (!demographics || !demographics.genderSplit || demographics.genderSplit.length === 0) {
-    return (
-      <div className="col-span-12 bg-gray-900/50 ring-1 ring-white/10 p-6 rounded-2xl">
-        <h2 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Audience Demographics</h2>
-        <p className="text-gray-500">Audience demographics data is not available.</p>
-      </div>
-    );
-  }
-
-  const GENDER_COLORS = ['#8884d8', '#82ca9d'];
-  const AGE_COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088FE', '#00C49F'];
-
-  return (
-    <div className="col-span-12 bg-gray-900/50 ring-1 ring-white/10 p-6 rounded-2xl">
-      <h2 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Audience Demographics</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Gender Split */}
-        <div className="flex flex-col items-center">
-          <h3 className="text-xs font-semibold text-gray-400 mb-2">GENDER SPLIT</h3>
-          <ResponsiveContainer width="100%" height={200}>
-            <PieChart>
-              <Pie
-                data={demographics.genderSplit}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
-                nameKey="name"
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-              >
-                {demographics.genderSplit.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={GENDER_COLORS[index % GENDER_COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }} />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Age Groups */}
-        <div className="flex flex-col items-center">
-          <h3 className="text-xs font-semibold text-gray-400 mb-2">AGE GROUPS</h3>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={demographics.ageGroups} layout="vertical">
-              <XAxis type="number" hide />
-              <YAxis type="category" dataKey="name" stroke="#6b7280" width={50} />
-              <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }} cursor={{fill: 'rgba(255, 255, 255, 0.1)'}} />
-              <Bar dataKey="value" name="Percentage" fill="#8884d8">
-                {demographics.ageGroups.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={AGE_COLORS[index % AGE_COLORS.length]} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Top Geographies */}
-        <div className="flex flex-col items-center">
-          <h3 className="text-xs font-semibold text-gray-400 mb-2">TOP GEOGRAPHIES</h3>
-          <div className="w-full space-y-3 pt-4">
-              {demographics.topGeographies.map((geo, index) => (
-                  <div key={index} className="text-sm">
-                      <div className="flex justify-between items-center mb-1">
-                          <span className="text-gray-300">{geo.name}</span>
-                          <span className="font-bold text-white">{geo.value}%</span>
-                      </div>
-                      <div className="w-full bg-gray-700 rounded-full h-2">
-                          <div className="bg-green-500 h-2 rounded-full" style={{ width: `${geo.value}%` }}></div>
-                      </div>
-                  </div>
-              ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-
-const EngagementTrendChart = ({ data }) => {
-  const chartData = [...data].reverse().map((post, index) => ({
-    name: `Post ${index + 1}`,
-    likes: post.likes,
-    comments: post.comments,
-  }));
-
-  return (
-    <div className="bg-gray-900/50 ring-1 ring-white/10 p-6 rounded-2xl h-full">
-      <h2 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Engagement Trend</h2>
-      <ResponsiveContainer width="100%" height={250}>
-        <LineChart data={chartData}>
-          <XAxis dataKey="name" stroke="#6b7280" />
-          <YAxis stroke="#6b7280" />
-          <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }} />
-          <Legend />
-          <Line type="monotone" dataKey="likes" stroke="#8884d8" name="Likes" />
-          <Line type="monotone" dataKey="comments" stroke="#82ca9d" name="Comments" />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  );
-};
-
-const PostCategoryChart = ({ data }) => {
-  const tagCounts = data
-    .flatMap(p => p.tags || [])
-    .reduce((acc, tag) => {
-      acc[tag] = (acc[tag] || 0) + 1;
-      return acc;
-    }, {});
-
-  const chartData = Object.entries(tagCounts).map(([name, value]) => ({ name, value }));
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#ffc658'];
-
-  return (
-    <div className="bg-gray-900/50 ring-1 ring-white/10 p-6 rounded-2xl h-full">
-      <h2 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Post Categories</h2>
-      <ResponsiveContainer width="100%" height={250}>
-        <PieChart>
-          <Pie data={chartData} cx="50%" cy="50%" labelLine={false} outerRadius={80} fill="#8884d8" dataKey="value" nameKey="name" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
-            {chartData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-            ))}
-          </Pie>
-          <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }} />
-        </PieChart>
-      </ResponsiveContainer>
     </div>
   );
 };
