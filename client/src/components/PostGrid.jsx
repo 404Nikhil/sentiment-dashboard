@@ -1,0 +1,48 @@
+import React from 'react';
+import { Tag, Zap, Sun, Eye, Repeat } from 'lucide-react';
+
+const formatNumber = (num) => {
+  if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+  if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
+  return num;
+};
+
+const PostGrid = ({ posts }) => {
+    if (!posts || posts.length === 0) {
+        return <div className="bg-gray-900/50 ring-1 ring-white/10 p-6 rounded-2xl"><h2 className="text-white">No recent posts found.</h2></div>
+    }
+    return (
+        <div className="bg-gray-900/50 ring-1 ring-white/10 p-6 rounded-2xl">
+            <h2 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Recent Posts & AI Analysis</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+                {posts.map(post => (
+                    <div key={post.id || post.shortcode} className="bg-gray-800 rounded-lg overflow-hidden flex flex-col">
+                        <img src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/image-proxy?url=${encodeURIComponent(post.imageUrl)}`} className="w-full h-48 object-cover" alt={post.caption?.substring(0, 50)} />
+                        <div className="p-4 flex flex-col flex-grow">
+                           <div className="flex justify-between font-bold text-white text-sm mb-2">
+                                <span>❤️ {formatNumber(post.likes)}</span>
+                                <span>💬 {formatNumber(post.comments)}</span>
+                           </div>
+                           <p className="text-xs text-gray-400 line-clamp-2 mb-3 flex-grow">{post.caption || "No caption available."}</p>
+                           {post.tags && (
+                             <div className="text-xs space-y-2 border-t border-gray-700 pt-2 mt-auto">
+                                <div className="flex items-center gap-2 text-yellow-400" title="Tags"><Tag size={14} />{post.tags.join(', ') || 'N/A'}</div>
+                                <div className="flex items-center gap-2 text-cyan-400" title="Vibe"><Zap size={14} />{post.vibe || 'N/A'}</div>
+                                {post.quality && (
+                                  <>
+                                    <div className="flex items-center gap-2 text-purple-400" title="Lighting"><Sun size={14} />{post.quality.lighting || 'N/A'}</div>
+                                    <div className="flex items-center gap-2 text-pink-400" title="Visual Appeal"><Eye size={14} />{post.quality.visualAppeal || 'N/A'}</div>
+                                    <div className="flex items-center gap-2 text-indigo-400" title="Consistency"><Repeat size={14} />{post.quality.consistency || 'N/A'}</div>
+                                  </>
+                                )}
+                             </div>
+                           )}
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+export default PostGrid;

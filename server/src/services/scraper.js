@@ -75,11 +75,15 @@ async function scrapeInstagramProfile(username) {
         throw new Error(`Failed to fetch user feed. Status: ${feedResponse.status}. Body: ${errorBody}`);
     }
     const feedJson = await feedResponse.json();
-    const items = feedJson.items.slice(0, 10);
+    
+    const recentPosts = [];
+    const recentReels = [];
 
-    const recentPosts = items.map(item => {
+    feedJson.items.forEach(item => {
+      const isReel = item.media_type === 2; // media_type 2 is for videos/reels
       const imageUrl = item.image_versions2?.candidates[0]?.url || item.carousel_media?.[0]?.image_versions2?.candidates[0]?.url;
-      return {
+
+      const postData = {
         id: item.id,
         imageUrl: imageUrl,
         likes: item.like_count || 0,
@@ -87,9 +91,21 @@ async function scrapeInstagramProfile(username) {
         caption: item.caption?.text || "",
         postUrl: `https://www.instagram.com/p/${item.code}/`
       };
+
+      if (isReel) {
+        postData.views = item.play_count || 0;
+        if (recentReels.length < 5) {
+          recentReels.push(postData);
+        }
+      } else {
+        if (recentPosts.length < 10) {
+          recentPosts.push(postData);
+        }
+      }
     });
 
-    const finalData = { ...basicInfo, recentPosts: recentPosts };
+
+    const finalData = { ...basicInfo, recentPosts, recentReels };
 
     const outputPath = path.join(__dirname, '../../output.json');
     await fs.writeFile(outputPath, JSON.stringify(finalData, null, 2));

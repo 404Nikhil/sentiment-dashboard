@@ -3,6 +3,7 @@ const router = express.Router();
 const Influencer = require('../models/Influencer');
 const { scrapeInstagramProfile } = require('../services/scraper');
 const { analyzeImage } = require('../services/aiAnalyzer');
+const { analyzeAudienceDemographics } = require('../services/aiDemographics');
 
 const calculateAnalytics = (posts, followers) => {
   if (!posts || posts.length === 0) return { avgLikes: 0, avgComments: 0, engagementRate: 0, engagementLevel: 'N/A' };
@@ -43,34 +44,47 @@ router.get('/:username', async (req, res) => {
         console.log(`Serving fresh data from cache for ${username}`);
         return res.json(influencer);
       }
-    } else {
-      console.log(`Force refreshing data for ${username}. Bypassing cache.`);
     }
-
+    
+    console.log(`Force refreshing data for ${username}. Bypassing cache.`);
 
     const scrapedData = await scrapeInstagramProfile(username);
-    if (!scrapedData || !scrapedData.recentPosts || !scrapedData.recentPosts.length) {
-      const oldInfluencerData = await Influencer.findOne({ username });
-      if(oldInfluencerData) {
-        console.warn(`Scraping failed. Serving stale data for ${username}.`);
-        return res.json(oldInfluencerData);
-      }
-      return res.status(500).json({ msg: 'Scraping failed and no cached data available.' });
-    }
-
-    console.log('Starting AI analysis for scraped posts...');
-    const enrichedPosts = await Promise.all(
-      scrapedData.recentPosts.map(async (post) => {
-        if (post.imageUrl) {
-            const aiData = await analyzeImage(post.imageUrl);
-            return { ...post, ...aiData };
+    if (!scrapedData) {
+        const oldInfluencerData = await Influencer.findOne({ username });
+        if(oldInfluencerData) {
+          console.warn(`Scraping failed. Serving stale data for ${username}.`);
+          return res.json(oldInfluencerData);
         }
-        return post; 
-      })
-    );
+        return res.status(500).json({ msg: 'Scraping failed and no cached data available.' });
+      }
+  
+      console.log('Starting AI analysis for scraped posts...');
+      const enrichedPosts = await Promise.all(
+        (scrapedData.recentPosts || []).map(async (post) => {
+          if (post.imageUrl) {
+              const aiData = await analyzeImage(post.imageUrl);
+              return { ...post, ...aiData };
+          }
+          return post; 
+        })
+      );
+  
+      console.log('Starting AI analysis for scraped reels...');
+      const enrichedReels = await Promise.all(
+        (scrapedData.recentReels || []).map(async (reel) => {
+          if (reel.imageUrl) {
+              const aiData = await analyzeImage(reel.imageUrl);
+              return { ...reel, ...aiData };
+          }
+          return reel;
+        })
+      );
 
     const followersCount = parseInt(String(scrapedData.followers).replace(/,/g, ''), 10) || 0;
     const analytics = calculateAnalytics(enrichedPosts, followersCount);
+
+    console.log('Starting AI analysis for audience demographics...');
+    const audienceDemographics = await analyzeAudienceDemographics({ ...scrapedData, recentPosts: enrichedPosts });
 
     const profileData = {
         username: scrapedData.username,
@@ -80,7 +94,9 @@ router.get('/:username', async (req, res) => {
         following: parseInt(String(scrapedData.following).replace(/,/g, ''), 10) || 0,
         postsCount: parseInt(String(scrapedData.postsCount).replace(/,/g, ''), 10) || 0,
         recentPosts: enrichedPosts,
+        recentReels: enrichedReels,
         engagementAnalytics: analytics,
+        audienceDemographics: audienceDemographics,
         lastUpdated: new Date(),
         location: "SPAIN",
         age: 23,
@@ -91,7 +107,7 @@ router.get('/:username', async (req, res) => {
         occupation: { "jobTitle": "Software developer", "company": "Microsoft", "annualIncome": "$100K" }
     };
     
-    influencer = await Influencer.findOneAndUpdate(
+    const influencer = await Influencer.findOneAndUpdate(
       { username: username },
       profileData,
       { new: true, upsert: true }

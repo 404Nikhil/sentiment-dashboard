@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Smile, Users, Brain, ShieldCheck, Award, Home, Clock, Tv, AtSign, MessageCircle, BarChart2 as BarChartIcon, UserCircle, Settings, Tag, Zap, Star, TrendingUp, Sun, Eye, Repeat, RefreshCw } from 'lucide-react';
-import { LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Smile, Users, Brain, ShieldCheck, Award, Home, Clock, Tv, AtSign, MessageCircle, BarChart2 as BarChartIcon, UserCircle, Settings, RefreshCw } from 'lucide-react';
+import { LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
+
+import PostGrid from './components/PostGrid';
+import ReelsGrid from './components/ReelsGrid';
 
 const iconMap = {
   sentiment: Smile, extrovert: Users, cognizant: Brain, risk: ShieldCheck, 'fair-play': Award,
@@ -8,8 +11,8 @@ const iconMap = {
 };
 
 const App = () => {
-  const [username, setUsername] = useState('isro'); // Default username
-  const [inputValue, setInputValue] = useState('isro');
+  const [username, setUsername] = useState('nasa');
+  const [inputValue, setInputValue] = useState('nasa');
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -108,6 +111,9 @@ const App = () => {
               <div className="col-span-12 xl:col-span-4">
                 <EngagementPanel analytics={profile.engagementAnalytics} />
               </div>
+               <div className="col-span-12">
+                <AudienceDemographics demographics={profile.audienceDemographics} />
+              </div>
               <div className="col-span-12 lg:col-span-7">
                 <EngagementTrendChart data={profile.recentPosts} />
               </div>
@@ -116,6 +122,9 @@ const App = () => {
               </div>
               <div className="col-span-12">
                 <PostGrid posts={profile.recentPosts} />
+              </div>
+              <div className="col-span-12">
+                <ReelsGrid reels={profile.recentReels} />
               </div>
             </div>
           ) : (
@@ -181,6 +190,88 @@ const EngagementPanel = ({ analytics }) => {
     );
 };
 
+const AudienceDemographics = ({ demographics }) => {
+  if (!demographics || !demographics.genderSplit || demographics.genderSplit.length === 0) {
+    return (
+      <div className="col-span-12 bg-gray-900/50 ring-1 ring-white/10 p-6 rounded-2xl">
+        <h2 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Audience Demographics</h2>
+        <p className="text-gray-500">Audience demographics data is not available.</p>
+      </div>
+    );
+  }
+
+  const GENDER_COLORS = ['#8884d8', '#82ca9d'];
+  const AGE_COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088FE', '#00C49F'];
+
+  return (
+    <div className="col-span-12 bg-gray-900/50 ring-1 ring-white/10 p-6 rounded-2xl">
+      <h2 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Audience Demographics</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Gender Split */}
+        <div className="flex flex-col items-center">
+          <h3 className="text-xs font-semibold text-gray-400 mb-2">GENDER SPLIT</h3>
+          <ResponsiveContainer width="100%" height={200}>
+            <PieChart>
+              <Pie
+                data={demographics.genderSplit}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="value"
+                nameKey="name"
+                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+              >
+                {demographics.genderSplit.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={GENDER_COLORS[index % GENDER_COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }} />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Age Groups */}
+        <div className="flex flex-col items-center">
+          <h3 className="text-xs font-semibold text-gray-400 mb-2">AGE GROUPS</h3>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={demographics.ageGroups} layout="vertical">
+              <XAxis type="number" hide />
+              <YAxis type="category" dataKey="name" stroke="#6b7280" width={50} />
+              <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }} cursor={{fill: 'rgba(255, 255, 255, 0.1)'}} />
+              <Bar dataKey="value" name="Percentage" fill="#8884d8">
+                {demographics.ageGroups.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={AGE_COLORS[index % AGE_COLORS.length]} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Top Geographies */}
+        <div className="flex flex-col items-center">
+          <h3 className="text-xs font-semibold text-gray-400 mb-2">TOP GEOGRAPHIES</h3>
+          <div className="w-full space-y-3 pt-4">
+              {demographics.topGeographies.map((geo, index) => (
+                  <div key={index} className="text-sm">
+                      <div className="flex justify-between items-center mb-1">
+                          <span className="text-gray-300">{geo.name}</span>
+                          <span className="font-bold text-white">{geo.value}%</span>
+                      </div>
+                      <div className="w-full bg-gray-700 rounded-full h-2">
+                          <div className="bg-green-500 h-2 rounded-full" style={{ width: `${geo.value}%` }}></div>
+                      </div>
+                  </div>
+              ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
 const EngagementTrendChart = ({ data }) => {
   const chartData = [...data].reverse().map((post, index) => ({
     name: `Post ${index + 1}`,
@@ -231,45 +322,6 @@ const PostCategoryChart = ({ data }) => {
       </ResponsiveContainer>
     </div>
   );
-};
-
-
-const PostGrid = ({ posts }) => {
-    if (!posts || posts.length === 0) {
-        return <div className="bg-gray-900/50 ring-1 ring-white/10 p-6 rounded-2xl"><h2 className="text-white">No recent posts found.</h2></div>
-    }
-    return (
-        <div className="bg-gray-900/50 ring-1 ring-white/10 p-6 rounded-2xl">
-            <h2 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Recent Posts & AI Analysis</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-                {posts.map(post => (
-                    <div key={post.id || post.shortcode} className="bg-gray-800 rounded-lg overflow-hidden flex flex-col">
-                        <img src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/image-proxy?url=${encodeURIComponent(post.imageUrl)}`} className="w-full h-48 object-cover" alt={post.caption?.substring(0, 50)} />
-                        <div className="p-4 flex flex-col flex-grow">
-                           <div className="flex justify-between font-bold text-white text-sm mb-2">
-                                <span>❤️ {formatNumber(post.likes)}</span>
-                                <span>💬 {formatNumber(post.comments)}</span>
-                           </div>
-                           <p className="text-xs text-gray-400 line-clamp-2 mb-3 flex-grow">{post.caption || "No caption available."}</p>
-                           {post.tags && (
-                             <div className="text-xs space-y-2 border-t border-gray-700 pt-2 mt-auto">
-                                <div className="flex items-center gap-2 text-yellow-400" title="Tags"><Tag size={14} />{post.tags.join(', ') || 'N/A'}</div>
-                                <div className="flex items-center gap-2 text-cyan-400" title="Vibe"><Zap size={14} />{post.vibe || 'N/A'}</div>
-                                {post.quality && (
-                                  <>
-                                    <div className="flex items-center gap-2 text-purple-400" title="Lighting"><Sun size={14} />{post.quality.lighting || 'N/A'}</div>
-                                    <div className="flex items-center gap-2 text-pink-400" title="Visual Appeal"><Eye size={14} />{post.quality.visualAppeal || 'N/A'}</div>
-                                    <div className="flex items-center gap-2 text-indigo-400" title="Consistency"><Repeat size={14} />{post.quality.consistency || 'N/A'}</div>
-                                  </>
-                                )}
-                             </div>
-                           )}
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
 };
 
 export default App;

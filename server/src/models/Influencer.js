@@ -18,6 +18,7 @@ const InfluencerSchema = new mongoose.Schema({
   occupation: mongoose.Schema.Types.Mixed,
   engagementAnalytics: mongoose.Schema.Types.Mixed,
   recentPosts: [mongoose.Schema.Types.Mixed],
+  recentReels: [mongoose.Schema.Types.Mixed],
   audienceDemographics: mongoose.Schema.Types.Mixed,
   lastUpdated: { type: Date, default: Date.now },
 });
