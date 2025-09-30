@@ -45,13 +45,13 @@ const PostCategoryChart = ({ posts, reels }) => {
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
             ))}
           </Pie>
-          <Tooltip 
+          {/* <Tooltip 
             contentStyle={{ 
               backgroundColor: '#161B22', 
               border: '1px solid #30363D',
               color: '#E6EDF3'
             }} 
-          />
+          /> */}
         </PieChart>
       </ResponsiveContainer>
     </div>

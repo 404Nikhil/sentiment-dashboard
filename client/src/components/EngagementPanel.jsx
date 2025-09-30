@@ -10,7 +10,7 @@ const EngagementPanel = ({ analytics }) => {
       return 'text-gray-400';
     };
     return (
-        <div className="bg-gray-900/50 ring-1 ring-white/10 p-6 rounded-2xl h-full flex flex-col">
+        <div className="bg-card ring-1 ring-white/10 p-6 rounded-2xl h-full flex flex-col">
             <h2 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Engagement Analytics</h2>
             <div className="space-y-4 text-sm flex-grow">
                 <div className="flex justify-between items-center"><span className="text-gray-400">Avg Likes / Post</span><span className="font-bold text-white text-lg">{formatNumber(analytics.avgLikes)}</span></div>

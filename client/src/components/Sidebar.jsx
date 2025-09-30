@@ -12,7 +12,7 @@ const NavIcon = ({ iconName }) => {
 };
 
 const Sidebar = () => (
-  <aside className="col-span-12 lg:col-span-1 bg-gray-900/50 ring-1 ring-white/10 rounded-2xl p-2 flex lg:flex-col items-center justify-around lg:justify-start lg:space-y-6">
+  <aside className="col-span-12 lg:col-span-1 bg-card ring-1 ring-white/10 rounded-2xl p-2 flex lg:flex-col items-center justify-around lg:justify-start lg:space-y-6">
     <div className="p-2 bg-blue-500 rounded-lg text-white font-bold">In</div>
     <NavIcon iconName="home" />
     <NavIcon iconName="clock" />

@@ -4,12 +4,12 @@ export default {
     theme: {
         extend: {
             colors: {
-                'primary': '#58A6FF',
-                'background': '#0D1117',
-                'card': '#161B22',
-                'border': '#30363D',
-                'text-primary': '#E6EDF3',
-                'text-secondary': '#8B949E',
+                'primary': '#0A84FF', 
+                'background': '#1C1C1E', 
+                'card': '#2C2C2E', 
+                'border': '#38383A', 
+                'text-primary': '#F2F2F7', 
+                'text-secondary': '#8D8D92', 
             }
         },
     },

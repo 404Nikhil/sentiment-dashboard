@@ -35,7 +35,7 @@ const App = () => {
           />
           <button
             type="submit"
-            className="bg-primary hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition disabled:opacity-50"
+            className="bg-primary hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition disabled:opacity-50"
             disabled={loading}
           >
             {loading && username === inputValue ? 'Fetching...' : 'Fetch Profile'}
@@ -43,16 +43,17 @@ const App = () => {
           <button
             type="button"
             onClick={(e) => handleSubmit(e, true)}
-            className="bg-gray-600 hover:bg-gray-700 text-white font-bold p-2 rounded-lg transition disabled:opacity-50"
-            title="Force Refresh (bypass cache)"
+            className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg transition disabled:opacity-50 flex items-center space-x-2"
+            title="Force Refresh (bypasses 24-hour cache)"
             disabled={loading}
           >
              <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+             <span>Force Refresh</span>
           </button>
         </form>
       </div>
       
-      {error && !loading && <div className="max-w-[1400px] mx-auto mb-4 text-center bg-red-900/50 text-red-300 text-sm py-2 px-4 rounded-lg">{error}</div>}
+      {error && !loading && <div className="max-w-[1400px] mx-auto mb-4 text-center bg-red-100 text-red-700 text-sm py-2 px-4 rounded-lg">{error}</div>}
       
       <div className="max-w-[1400px] mx-auto grid grid-cols-12 gap-6">
         <Sidebar />

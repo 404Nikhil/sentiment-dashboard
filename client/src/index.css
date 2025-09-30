@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 body {
-    @apply bg-background text-text-primary;
+    @apply bg-background text-text-primary font-sans;
 }
 
 .tag-badge {

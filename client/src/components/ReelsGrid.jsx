@@ -33,14 +33,14 @@ const ReelsGrid = ({ reels }) => {
                            {reel.tags && (
                              <div className="text-xs space-y-2 border-t border-border pt-2 mt-auto">
                                <div className="flex items-center gap-2">
-                                    <span className="tag-badge bg-yellow-900/50 text-yellow-300 border border-yellow-700"><Tag size={14} className="inline-block mr-1"/>{reel.tags.join(', ') || 'N/A'}</span>
+                                    <span className="tag-badge bg-gray-700 text-gray-300"><Tag size={14} className="inline-block mr-1"/>{reel.tags.join(', ') || 'N/A'}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <span className="tag-badge bg-cyan-900/50 text-cyan-300 border border-cyan-700"><Zap size={14} className="inline-block mr-1"/>{reel.vibe || 'N/A'}</span>
+                                    <span className="tag-badge bg-gray-700 text-gray-300"><Zap size={14} className="inline-block mr-1"/>{reel.vibe || 'N/A'}</span>
                                 </div>
                                 {reel.quality && (
                                   <div className="flex items-center gap-2">
-                                    <span className="tag-badge bg-purple-900/50 text-purple-300 border border-purple-700"><Sun size={14} className="inline-block mr-1"/>{reel.quality.lighting || 'N/A'}</span>
+                                    <span className="tag-badge bg-gray-700 text-gray-300"><Sun size={14} className="inline-block mr-1"/>{reel.quality.lighting || 'N/A'}</span>
                                   </div>
                                 )}
                              </div>
