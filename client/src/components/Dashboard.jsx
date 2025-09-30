@@ -17,7 +17,7 @@ const Dashboard = ({ profile, loading, error }) => {
   }
 
   if (!profile) {
-    return <div className="text-center py-20 text-gray-500">Enter a username to get started.</div>;
+    return <div className="text-center py-20 text-text-secondary">Enter a username to get started.</div>;
   }
 
   return (
@@ -32,10 +32,10 @@ const Dashboard = ({ profile, loading, error }) => {
         <AudienceDemographics demographics={profile.audienceDemographics} />
       </div>
       <div className="col-span-12 lg:col-span-7">
-        <EngagementTrendChart data={profile.recentPosts} />
+        <EngagementTrendChart posts={profile.recentPosts} reels={profile.recentReels} />
       </div>
       <div className="col-span-12 lg:col-span-5">
-        <PostCategoryChart data={profile.recentPosts} />
+        <PostCategoryChart posts={profile.recentPosts} reels={profile.recentReels} />
       </div>
       <div className="col-span-12">
         <PostGrid posts={profile.recentPosts} />

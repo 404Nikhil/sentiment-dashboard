@@ -23,7 +23,7 @@ const App = () => {
   };
 
   return (
-    <div className="bg-black text-gray-300 min-h-screen font-sans p-4 lg:p-6">
+    <div className="bg-background text-text-primary min-h-screen font-sans p-4 lg:p-6">
       <div className="max-w-[1400px] mx-auto mb-6">
         <form onSubmit={(e) => handleSubmit(e, false)} className="flex items-center space-x-2">
           <input
@@ -31,11 +31,11 @@ const App = () => {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             placeholder="Enter Instagram Username"
-            className="bg-gray-800 text-white px-4 py-2 rounded-lg w-full md:w-1/3 ring-1 ring-white/10 focus:ring-blue-500 outline-none transition"
+            className="bg-card text-text-primary px-4 py-2 rounded-lg w-full md:w-1/3 border border-border focus:ring-2 focus:ring-primary outline-none transition"
           />
           <button
             type="submit"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition disabled:opacity-50"
+            className="bg-primary hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition disabled:opacity-50"
             disabled={loading}
           >
             {loading && username === inputValue ? 'Fetching...' : 'Fetch Profile'}

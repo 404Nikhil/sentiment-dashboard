@@ -37,17 +37,13 @@ async function analyzeImage(imageUrl) {
         "tags": ["tag1", "tag2"],
         "vibe": "...",
         "quality": {
-          "lighting": "...",
-          "visualAppeal": "...",
-          "consistency": "..."
+          "lighting": "..."
         }
       }
       - "tags": An array of 2-3 relevant string keywords from this list: ['food', 'travel', 'fashion', 'selfie', 'car', 'pet', 'fitness', 'nature', 'city', 'art', 'tech', 'lifestyle', 'product'].
       - "vibe": A single descriptive string from this list: ['casual', 'aesthetic', 'luxury/lavish', 'energetic', 'calm', 'professional', 'happy', 'moody', 'minimalist'].
-      - "quality": An object with three keys. For each key, provide a single, concise descriptive string (e.g., "Bright", "Poor", "High", "Inconsistent").
+      - "quality": An object with one key. For each key, provide a single, concise descriptive string (e.g., "Bright", "Poor", "High").
           - "lighting": Describes the quality of light (e.g., "Good", "Harsh", "Dim", "Natural").
-          - "visualAppeal": Describes the overall aesthetic attractiveness (e.g., "High", "Average", "Low", "Striking").
-          - "consistency": Describes how well it fits a consistent theme if one is apparent (e.g., "Consistent", "Off-brand", "Varied").
     `;
     const payload = {
       contents: [{
