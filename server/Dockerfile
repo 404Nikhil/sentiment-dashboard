@@ -1,11 +1,11 @@
 
-FROM mcr.microsoft.com/playwright:v1.44.0-jammy
+FROM node:20-slim
 
 WORKDIR /usr/src/app
 
 COPY package*.json ./
 
-RUN npm install --frozen-lockfile
+RUN npm install --frozen-lockfile --omit=dev
 
 COPY . .
 
