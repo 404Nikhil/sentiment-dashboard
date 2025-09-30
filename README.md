@@ -2,7 +2,9 @@
 
 This full-stack web application provides a comprehensive, data-rich profile of any public Instagram influencer. It scrapes real-time data, enriches it with AI-powered analysis, and presents it in a clean, modern, and responsive user interface.
 
-*(SS OR GIF)*
+![Output_of_profile](./down.gif)
+
+[**Demo Video**](https://drive.google.com/drive/folders/1yZWPFLbig8taRdXZhSFBruDkbG6OgexP?usp=sharing)
 
 ---
 
@@ -11,7 +13,7 @@ This full-stack web application provides a comprehensive, data-rich profile of a
 
 The application is a sophisticated pipeline that transforms raw, public data into actionable insights.
 
-*(Diagram)*
+![Flow chart](./flow_chart.png)
 
 ### 1. The Scraping Pipeline: A Deep Dive
 
@@ -98,6 +100,10 @@ This provides a percentage that represents how actively the influencer's audienc
 * **Modular Frontend**: Built with a clean, component-based architecture for maintainability and scalability.
 
 ---
+
+## server/output.json or server/scraped.json
+![Scraped output GIF](./output.gif)
+
 
 ## Tech Stack
 

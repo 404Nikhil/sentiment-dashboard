@@ -56,7 +56,7 @@ const App = () => {
       {error && !loading && <div className="max-w-[1400px] mx-auto mb-4 text-center bg-red-100 text-red-700 text-sm py-2 px-4 rounded-lg">{error}</div>}
       
       <div className="max-w-[1400px] mx-auto grid grid-cols-12 gap-6">
-        <Sidebar />
+        {/* <Sidebar /> */}
         <main className="col-span-12 lg:col-span-11">
           <Dashboard profile={profile} loading={loading} error={null} />
         </main>
