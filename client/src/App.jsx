@@ -5,8 +5,8 @@ import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 
 const App = () => {
-  const [username, setUsername] = useState('nasa'); // default username
-  const [inputValue, setInputValue] = useState('nasa');
+  const [username, setUsername] = useState('jiohotstarreality'); // default username
+  const [inputValue, setInputValue] = useState('jiohotstarreality');
   const { profile, loading, error, fetchProfile } = useInfluencerData();
 
   useEffect(() => {
