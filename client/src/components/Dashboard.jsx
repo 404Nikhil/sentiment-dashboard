@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ProfileHeader from './ProfileHeader';
 import EngagementPanel from './EngagementPanel';
 import AudienceDemographics from './AudienceDemographics';
@@ -6,8 +6,22 @@ import EngagementTrendChart from './EngagementTrendChart';
 import PostCategoryChart from './PostCategoryChart';
 import PostGrid from './PostGrid';
 import ReelsGrid from './ReelsGrid';
+import PostModal from './PostModal';
 
 const Dashboard = ({ profile, loading, error }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+
+  const handlePostClick = (item) => {
+    setSelectedItem(item);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedItem(null);
+  };
+
   if (loading) {
     return <div className="text-center py-20">Loading Profile...</div>;
   }
@@ -38,11 +52,12 @@ const Dashboard = ({ profile, loading, error }) => {
         <PostCategoryChart posts={profile.recentPosts} reels={profile.recentReels} />
       </div>
       <div className="col-span-12">
-        <PostGrid posts={profile.recentPosts} />
+        <PostGrid posts={profile.recentPosts} onPostClick={handlePostClick} />
       </div>
       <div className="col-span-12">
-        <ReelsGrid reels={profile.recentReels} />
+        <ReelsGrid reels={profile.recentReels} onReelClick={handlePostClick} />
       </div>
+      {isModalOpen && <PostModal item={selectedItem} onClose={handleCloseModal} />}
     </div>
   );
 };

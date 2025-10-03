@@ -7,7 +7,7 @@ const formatNumber = (num) => {
   return num;
 };
 
-const ReelsGrid = ({ reels }) => {
+const ReelsGrid = ({ reels, onReelClick }) => {
     if (!reels || reels.length === 0) {
         return <div className="bg-card border border-border p-6 rounded-2xl"><h2 className="text-text-primary">No recent reels found.</h2></div>
     }
@@ -16,7 +16,11 @@ const ReelsGrid = ({ reels }) => {
             <h2 className="text-sm font-semibold text-text-primary uppercase tracking-wider mb-4">Recent Reels & AI Analysis</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
                 {reels.map(reel => (
-                    <div key={reel.id || reel.shortcode} className="bg-background border border-border rounded-lg overflow-hidden flex flex-col transition-transform transform hover:scale-105">
+                    <div 
+                        key={reel.id || reel.shortcode} 
+                        className="bg-background border border-border rounded-lg overflow-hidden flex flex-col transition-transform transform hover:scale-105 cursor-pointer"
+                        onClick={() => onReelClick(reel)}
+                    >
                         <div className="relative">
                             <img src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/image-proxy?url=${encodeURIComponent(reel.imageUrl)}`} className="w-full h-48 object-cover" alt={reel.caption?.substring(0, 50)} />
                             <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center">
