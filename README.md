@@ -2,7 +2,12 @@
 
 This full-stack web application provides a comprehensive, data-rich profile of any public Instagram influencer. It scrapes real-time data, enriches it with AI-powered analysis, and presents it in a clean, modern, and responsive user interface.
 
+
+
 ![Output_of_profile](./down.gif)
+
+![Demo](https://i.ibb.co/1YvXWV4Y/image.png)
+![Demo](https://i.ibb.co/ch326xw1/image.png)
 
 [**Demo Video**](https://drive.google.com/drive/folders/1yZWPFLbig8taRdXZhSFBruDkbG6OgexP?usp=sharing)
 
