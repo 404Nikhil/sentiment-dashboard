@@ -6,8 +6,11 @@ This full-stack web application provides a comprehensive, data-rich profile of a
 
 ![Output_of_profile](./down.gif)
 
-![Demo](https://i.ibb.co/1YvXWV4Y/image.png)
-![Demo](https://i.ibb.co/ch326xw1/image.png)
+<p align="center">
+  <img alt="Demo 1" width="45%" src="./image.png">
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img alt="Demo 2" width="45%" src="./image2.png">
+</p>
 
 [**Demo Video**](https://drive.google.com/drive/folders/1yZWPFLbig8taRdXZhSFBruDkbG6OgexP?usp=sharing)
 
