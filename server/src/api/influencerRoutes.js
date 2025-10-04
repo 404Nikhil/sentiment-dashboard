@@ -8,26 +8,30 @@ router.get('/:username', async (req, res) => {
   const { force } = req.query;
 
   try {
-    // Cache check
     if (force !== 'true') {
       const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
       const influencer = await Influencer.findOne({
         username: username,
         lastUpdated: { $gte: twentyFourHoursAgo },
       });
+
       if (influencer) {
-        console.log(`Serving fresh data from cache for ${username}`);
-        return res.json(influencer);
+        const hasAiData = (influencer.recentPosts && influencer.recentPosts.length > 0 && influencer.recentPosts[0].tags) ||
+                          (influencer.recentReels && influencer.recentReels.length > 0 && influencer.recentReels[0].tags);
+
+        if (hasAiData) {
+          console.log(`Serving fresh and complete data from cache for ${username}`);
+          return res.json(influencer);
+        }
       }
     }
     
-    console.log(`Force refreshing data for ${username}. Bypassing cache.`);
+    console.log(`Force refreshing or fetching new data for ${username}.`);
     const updatedProfile = await updateInfluencerProfile(username);
     res.json(updatedProfile);
 
   } catch (error) {
     console.error(`Error in influencer route for ${username}:`, error.message);
-    // Fallback to stale data if scraping fails
     const oldInfluencerData = await Influencer.findOne({ username });
     if(oldInfluencerData) {
       console.warn(`Scraping failed. Serving stale data for ${username}.`);

@@ -34,9 +34,12 @@ async function updateInfluencerProfile(username) {
     throw new Error(`Scraping failed for ${username}.`);
   }
 
+  console.log(`[Update Service] Found ${scrapedData.recentPosts.length} posts and ${scrapedData.recentReels.length} reels. Starting AI analysis...`);
+
   const enrichedPosts = await Promise.all(
     (scrapedData.recentPosts || []).map(async (post) => {
       if (post.imageUrl) {
+          console.log(`[Update Service] Analyzing post: ${post.id}`);
           const aiData = await analyzeImage(post.imageUrl);
           return { ...post, ...aiData };
       }
@@ -47,12 +50,15 @@ async function updateInfluencerProfile(username) {
   const enrichedReels = await Promise.all(
     (scrapedData.recentReels || []).map(async (reel) => {
       if (reel.imageUrl) {
+          console.log(`[Update Service] Analyzing reel: ${reel.id}`);
           const aiData = await analyzeImage(reel.imageUrl);
           return { ...reel, ...aiData };
       }
       return reel;
     })
   );
+
+  console.log('[Update Service] AI analysis complete.');
 
   const followersCount = parseInt(String(scrapedData.followers).replace(/,/g, ''), 10) || 0;
   const analytics = calculateAnalytics(enrichedPosts, followersCount);
@@ -78,7 +84,7 @@ async function updateInfluencerProfile(username) {
     { new: true, upsert: true }
   );
   
-  console.log(`[Update Service] Successfully updated ${username}`);
+  console.log(`[Update Service] Successfully updated and saved data for ${username}`);
   return updatedInfluencer;
 }
 
